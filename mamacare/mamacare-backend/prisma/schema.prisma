@@ -1,0 +1,203 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  Int                  @id @default(autoincrement())
+  name                String
+  phone               String               @unique
+  password            String
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  profile             MotherProfile?
+  symptomLogs         SymptomLog[]
+  vitalLogs           VitalLog[]
+  wellnessLogs        WellnessLog[]
+  appointments        Appointment[]
+  medicationReminders MedicationReminder[]
+  babyMovementLogs    BabyMovementLog[]
+  emergencyPlan       EmergencyPlan?
+  healthRecord        HealthRecord?
+  postnatalCare       PostnatalCare?
+  supportPeople       SupportPerson[]
+}
+
+model MotherProfile {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  name             String
+  phone            String?
+  pregnancyWeek    Int      @default(24)
+  dueDate          String?
+  location         String?
+  nextANC          String?
+  emergencyContact String?
+  language                String   @default("en")
+  appearance              String   @default("light")
+  fontSize                Int      @default(16)
+  preferredReminderMethod String   @default("in_app")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SymptomLog {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  symptoms       Json?
+  customSymptoms Json?
+  riskLevel      String   @default("normal")
+  analysisNotes  Json?
+  loggedAt       DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VitalLog {
+  id                 Int      @id @default(autoincrement())
+  userId             Int
+  systolic           Int?
+  diastolic          Int?
+  temperature        Float?
+  weightKg           Float?
+  facility           String?
+  babyMovementStatus String?
+  riskLevel          String   @default("normal")
+  analysisNotes      Json?
+  loggedAt           DateTime @default(now())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WellnessLog {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  mood          String?
+  energy        String?
+  sleep         String?
+  stress        String?
+  note          String?
+  riskLevel     String   @default("normal")
+  analysisNotes Json?
+  loggedAt      DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Appointment {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  type      String   @default("ANC")
+  date      String?
+  time      String?
+  facility  String?
+  notes     String?
+  status    String   @default("scheduled")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MedicationReminder {
+  id          Int       @id @default(autoincrement())
+  userId      Int
+  name        String
+  dosage      String?
+  frequency   String?
+  time        String?
+  notes       String?
+  lastTakenAt DateTime?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model BabyMovementLog {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  movementCount  Int      @default(0)
+  movementStatus String?
+  riskLevel      String   @default("normal")
+  notes          String?
+  loggedAt       DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model EmergencyPlan {
+  id              Int      @id @default(autoincrement())
+  userId          Int      @unique
+  nearestFacility String?
+  facilityPhone   String?
+  transportPerson String?
+  transportPhone  String?
+  supportPerson   String?
+  supportPhone    String?
+  bloodGroup      String?
+  cashPlan        String?
+  medicalNote     String?
+  checklist       Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model HealthRecord {
+  id                       Int      @id @default(autoincrement())
+  userId                   Int      @unique
+  ancNumber                String?
+  bloodGroup               String?
+  allergies                String?
+  knownConditions          String?
+  previousPregnancyHistory String?
+  currentFacility          String?
+  mainHealthWorker         String?
+  scanNotes                String?
+  labNotes                 String?
+  vaccinationNotes         String?
+  generalNotes             String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+  user                     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PostnatalCare {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique
+  afterBirthMode   Boolean  @default(false)
+  deliveryDate     String?
+  babyName         String?
+  deliveryFacility String?
+  birthWeight      String?
+  feedingMethod    String?
+  nextCheckup      String?
+  latestCheck      Json?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SupportPerson {
+  id             Int      @id @default(autoincrement())
+  userId         Int
+  name           String
+  relationship   String?
+  phone          String?
+  role           String?
+  allowedSupport Json?
+  notes          String?
+  isPrimary      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
